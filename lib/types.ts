@@ -30,6 +30,10 @@ export interface ScriptBlock {
 export interface GeneratedScript {
   title: string;
   blocks: ScriptBlock[];
+  /** Origen de la transcripción usada como base ("gemini" | "demo" | "none"). */
+  transcriptSource?: "gemini" | "demo" | "none";
+  /** Transcripción detallada del video original (si se obtuvo). */
+  transcript?: string;
 }
 
 export interface ChannelVideoIdea {

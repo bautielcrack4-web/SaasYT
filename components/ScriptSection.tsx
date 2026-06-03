@@ -17,6 +17,7 @@ function scriptToText(script: GeneratedScript): string {
 
 export default function ScriptSection({ script }: { script: GeneratedScript }) {
   const [copied, setCopied] = useState(false);
+  const [showTranscript, setShowTranscript] = useState(false);
 
   const copy = async () => {
     try {
@@ -48,6 +49,17 @@ export default function ScriptSection({ script }: { script: GeneratedScript }) {
           <p className="text-body-lg text-on-surface-variant mt-3">
             Estructura narrativa premium con nuevos ángulos de valor.
           </p>
+          {script.transcriptSource && script.transcriptSource !== "none" && (
+            <div className="mt-4 inline-flex items-center gap-2 bg-primary/5 border border-primary/10 text-primary px-4 py-1.5 rounded-full text-label-sm font-semibold">
+              <Icon
+                name={script.transcriptSource === "gemini" ? "verified" : "science"}
+                size={18}
+              />
+              {script.transcriptSource === "gemini"
+                ? "Basado en la transcripción real (Gemini 3 Flash)"
+                : "Transcripción demo (configura REPLICATE_API_TOKEN)"}
+            </div>
+          )}
         </div>
         <div className="flex gap-4">
           <button
@@ -121,6 +133,25 @@ export default function ScriptSection({ script }: { script: GeneratedScript }) {
           );
         })}
       </div>
+
+      {script.transcript && (
+        <div className="mt-8">
+          <button
+            onClick={() => setShowTranscript((v) => !v)}
+            className="flex items-center gap-2 text-primary font-semibold hover:gap-3 smooth-transition"
+          >
+            <Icon name={showTranscript ? "expand_less" : "subtitles"} />
+            {showTranscript
+              ? "Ocultar transcripción del video original"
+              : "Ver transcripción del video original"}
+          </button>
+          {showTranscript && (
+            <pre className="mt-4 glass-premium rounded-xl p-6 md:p-8 text-body-md text-on-surface-variant whitespace-pre-wrap leading-relaxed font-sans max-h-[480px] overflow-y-auto">
+              {script.transcript}
+            </pre>
+          )}
+        </div>
+      )}
     </section>
   );
 }

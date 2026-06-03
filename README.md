@@ -49,6 +49,10 @@ supabase/schema.sql     Esquema para activar persistencia
 1. **IA de texto** — en `app/api/analyze`, `app/api/script` y `app/api/channel`
    reemplaza las llamadas a `lib/mock.ts` por llamadas a Anthropic/OpenAI.
    Define `ANTHROPIC_API_KEY` u `OPENAI_API_KEY` (ver `.env.example`).
+1. **Transcripción de video** — ya integrada con **Google Gemini 3 Flash** vía
+   Replicate (`lib/transcribe.ts`, `app/api/transcribe`). Define
+   `REPLICATE_API_TOKEN` y al generar un guion se usará la transcripción real
+   del video; sin token funciona en modo demo.
 2. **Miniaturas** — añade generación/restyle de imagen en `/api/analyze`.
 3. **Supabase** — instala `@supabase/supabase-js @supabase/ssr`, ejecuta
    `supabase/schema.sql`, define las variables `NEXT_PUBLIC_SUPABASE_*` y migra
