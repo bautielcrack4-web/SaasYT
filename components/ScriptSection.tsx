@@ -49,10 +49,12 @@ export default function ScriptSection({ script }: { script: GeneratedScript }) {
           <p className="text-body-lg text-on-surface-variant mt-3">
             Estructura narrativa premium con nuevos ángulos de valor.
           </p>
-          {script.transcriptSource === "gemini" && (
+          {script.transcriptSource && (
             <div className="mt-4 inline-flex items-center gap-2 bg-primary/5 border border-primary/10 text-primary px-4 py-1.5 rounded-full text-label-sm font-semibold">
               <Icon name="verified" size={18} />
-              Basado en la transcripción real (Gemini 3 Flash)
+              {script.transcriptSource === "captions"
+                ? "Basado en la transcripción real (subtítulos de YouTube)"
+                : "Basado en la transcripción real (Gemini 3 Flash)"}
             </div>
           )}
         </div>

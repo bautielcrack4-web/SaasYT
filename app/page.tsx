@@ -52,6 +52,7 @@ export default function DashboardPage() {
           title: analysis.title.optimized,
           sourceUrl: analysis.sourceUrl,
           transcript: analysis.transcript,
+          transcriptSource: analysis.transcriptSource,
         }),
       });
       const data: GeneratedScript = await res.json();
@@ -137,6 +138,7 @@ export default function DashboardPage() {
         <TranscriptPanel
           url={analysis.sourceUrl}
           initialTranscript={analysis.transcript}
+          initialSource={analysis.transcriptSource}
         />
       )}
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { transcribeYouTube } from "@/lib/transcribe";
+import { getTranscript, type TranscriptSource } from "@/lib/transcript";
 import { generateScript, isOpenAIConfigured } from "@/lib/openai";
 
 export const maxDuration = 300;
@@ -14,6 +14,7 @@ export async function POST(req: Request) {
   const title: string = body.title || "";
   const sourceUrl: string | undefined = body.sourceUrl;
   let transcript: string = body.transcript || "";
+  const providedSource: TranscriptSource | undefined = body.transcriptSource;
 
   if (!isOpenAIConfigured()) {
     return NextResponse.json(
@@ -26,19 +27,23 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Si llega un enlace y no hay transcripción, la obtenemos con Gemini.
+    // Si llega un enlace y no hay transcripción, la obtenemos (real).
     // Si no hay ni transcripción ni enlace (idea de canal), se genera un
     // guion original a partir del título.
+    let transcriptSource: TranscriptSource | undefined = transcript
+      ? providedSource || "captions"
+      : undefined;
     if (!transcript && sourceUrl) {
-      const t = await transcribeYouTube(sourceUrl);
+      const t = await getTranscript(sourceUrl);
       transcript = t.transcript;
+      transcriptSource = t.source;
     }
 
     const script = await generateScript(transcript, title);
     return NextResponse.json({
       ...script,
       transcript: transcript || undefined,
-      transcriptSource: transcript ? ("gemini" as const) : undefined,
+      transcriptSource,
     });
   } catch (e) {
     return NextResponse.json(

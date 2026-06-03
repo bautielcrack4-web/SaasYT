@@ -19,7 +19,9 @@ export interface VideoAnalysis {
   thumbnail: ThumbnailAnalysis;
   /** Transcripción del video (base para título y guion). */
   transcript?: string;
-  transcriptSource?: "gemini";
+  transcriptSource?: "captions" | "gemini";
+  /** Autor/canal real del video (de YouTube oEmbed). */
+  author?: string;
 }
 
 export interface ScriptBlock {
@@ -35,7 +37,7 @@ export interface GeneratedScript {
   blocks: ScriptBlock[];
   /** Transcripción detallada del video original usada como base. */
   transcript?: string;
-  transcriptSource?: "gemini";
+  transcriptSource?: "captions" | "gemini";
 }
 
 export interface ChannelVideoIdea {
