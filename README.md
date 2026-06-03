@@ -6,8 +6,9 @@ miniatura** y un **guion adaptado** a tu canal. También puedes **analizar un
 canal** (subiendo una captura) para obtener una cuadrícula de **9 ideas de
 video**, y todo queda guardado en el **historial**.
 
-> **Estado actual: MODO DEMO.** Toda la generación usa datos simulados. La
-> arquitectura ya está lista para conectar IA real y Supabase sin tocar la UI.
+> **100% funcional con datos reales.** Transcripción con **Gemini 3 Flash**
+> (Replicate), análisis de título/guion y miniaturas con **OpenAI**
+> (`gpt-image-2`). Requiere `REPLICATE_API_TOKEN` y `OPENAI_API_KEY`.
 
 ## Stack
 

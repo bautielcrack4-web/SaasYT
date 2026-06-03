@@ -137,11 +137,6 @@ export default function DashboardPage() {
         <TranscriptPanel
           url={analysis.sourceUrl}
           initialTranscript={analysis.transcript}
-          initialSource={
-            analysis.transcriptSource === "none"
-              ? undefined
-              : analysis.transcriptSource
-          }
         />
       )}
 

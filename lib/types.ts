@@ -19,7 +19,7 @@ export interface VideoAnalysis {
   thumbnail: ThumbnailAnalysis;
   /** Transcripción del video (base para título y guion). */
   transcript?: string;
-  transcriptSource?: "gemini" | "demo" | "none";
+  transcriptSource?: "gemini";
 }
 
 export interface ScriptBlock {
@@ -33,12 +33,9 @@ export interface ScriptBlock {
 export interface GeneratedScript {
   title: string;
   blocks: ScriptBlock[];
-  /** Origen de la transcripción usada como base ("gemini" | "demo" | "none"). */
-  transcriptSource?: "gemini" | "demo" | "none";
-  /** Transcripción detallada del video original (si se obtuvo). */
+  /** Transcripción detallada del video original usada como base. */
   transcript?: string;
-  /** Mensaje de error si la transcripción falló (sigue generándose el guion). */
-  transcriptError?: string;
+  transcriptSource?: "gemini";
 }
 
 export interface ChannelVideoIdea {

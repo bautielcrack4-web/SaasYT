@@ -1,8 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Transcripción de videos de YouTube con Google Gemini 3 Flash (vía Replicate).
 //
-// Activación: define REPLICATE_API_TOKEN (ver .env.example).
-// Sin token → fallback demo, para que la app siga funcionando sin credenciales.
+// Requiere REPLICATE_API_TOKEN (ver .env.example). Sin token lanza error.
 //
 // Modelo: google/gemini-3-flash  →  https://replicate.com/google/gemini-3-flash
 // El input `videos` recibe el/los enlace(s) del video y `prompt` la instrucción.
@@ -12,7 +11,7 @@ import Replicate from "replicate";
 
 export interface TranscriptResult {
   transcript: string;
-  source: "gemini" | "demo";
+  source: "gemini";
 }
 
 // Instrucción enviada a Gemini junto con el enlace del video.
@@ -38,7 +37,9 @@ export async function transcribeYouTube(
   videoUrl: string
 ): Promise<TranscriptResult> {
   if (!isGeminiConfigured()) {
-    return { transcript: demoTranscript(videoUrl), source: "demo" };
+    throw new Error(
+      "REPLICATE_API_TOKEN no configurada: no se puede transcribir el video."
+    );
   }
 
   // El cliente toma el token de process.env.REPLICATE_API_TOKEN.
@@ -54,8 +55,6 @@ export async function transcribeYouTube(
   };
 
   // La respuesta del modelo llega en streaming; concatenamos los fragmentos.
-  // Si falla (input no soportado, video privado, etc.) propagamos el error
-  // con un mensaje claro en vez de ocultarlo cayendo al modo demo.
   let out = "";
   try {
     for await (const event of replicate.stream("google/gemini-3-flash", {
@@ -64,8 +63,7 @@ export async function transcribeYouTube(
       out += String(event);
     }
   } catch (err) {
-    // Fallback: algunos errores transitorios de streaming se resuelven con la
-    // llamada bloqueante. Si también falla, lanzamos el error original.
+    // Fallback: errores transitorios de streaming -> llamada bloqueante.
     try {
       const result = await replicate.run("google/gemini-3-flash", { input });
       out = Array.isArray(result) ? result.join("") : String(result);
@@ -83,19 +81,4 @@ export async function transcribeYouTube(
   }
 
   return { transcript, source: "gemini" };
-}
-
-// Transcripción simulada para el modo demo (sin token).
-function demoTranscript(videoUrl: string): string {
-  return [
-    `[Transcripción DEMO — configura REPLICATE_API_TOKEN para usar Gemini 3 Flash]`,
-    `Fuente: ${videoUrl}`,
-    "",
-    "[00:00] Bienvenidos de nuevo al canal. Hoy vamos a hablar de cómo aprendí a programar desde cero en muy poco tiempo.",
-    "[00:14] La mayoría de la gente cree que esto se trata de memorizar comandos, pero el verdadero secreto es otro.",
-    "[00:42] [En pantalla: \"3 errores que todos cometen\"] El primer error es saltar de tutorial en tutorial sin construir nada propio.",
-    "[01:20] Lo segundo: no entender la lógica detrás del código, solo copiarlo.",
-    "[02:05] Y lo tercero, que casi nadie menciona, es no aprender a leer documentación.",
-    "[03:10] Si aplicas estas tres cosas, en 90 días vas a estar construyendo tus propios proyectos.",
-  ].join("\n");
 }

@@ -2,7 +2,7 @@
 // Integración con OpenAI: análisis de título, generación de guion y miniaturas.
 //
 // Activación: define OPENAI_API_KEY (ver .env.example).
-// Sin key → las funciones lanzan NotConfiguredError y las rutas usan el mock.
+// Sin key → las funciones lanzan NotConfiguredError y las rutas responden 400.
 //
 // Texto:    https://developers.openai.com/api/docs/guides/text
 // Imágenes: https://developers.openai.com/api/docs/guides/image-generation
@@ -105,49 +105,72 @@ Incluye 3 styleTags que describan el estilo de escritura detectado (p. ej. "Ganc
 }
 
 // ── 2. Generación de guion adaptado ─────────────────────────────────────────
+
+const SCRIPT_SYSTEM_PROMPT = `Eres un guionista profesional de YouTube, experto en retención de audiencia, storytelling y CTR. Tu trabajo es estudiar el guion (transcripción) de un video de referencia y escribir un guion NUEVO para nuestro canal sobre el mismo tema.
+
+OBJETIVO
+Producir un guion listo para grabar, que suene natural al hablarlo, con altísima retención de principio a fin.
+
+ANÁLISIS PREVIO (hazlo mentalmente, no lo imprimas)
+1. Detecta el ESTILO de escritura del original: tono (cercano/formal/enérgico), ritmo de frases, uso de preguntas, jerga del nicho, persona (tú/ustedes/nosotros), nivel técnico.
+2. Detecta la ESTRUCTURA narrativa y los "loops abiertos" que mantienen la atención.
+3. Mide la LONGITUD aproximada en caracteres del original.
+
+REGLAS DE ESCRITURA DEL NUEVO GUION
+- Replica el ESTILO, tono, ritmo y persona del original con precisión: debe parecer del mismo tipo de creador.
+- Ajusta la longitud total del guion para que se aproxime a la del original (±10 %).
+- Escribe en el MISMO idioma que la transcripción de referencia.
+- Aporta un ÁNGULO DISTINTO y NUEVA información de valor real (datos, marcos, ejemplos, pasos accionables) que el original no menciona. No parafrasees ni copies frases del original.
+- Gancho potentísimo en los primeros 15 segundos: promesa clara + intriga (open loop). Nada de "hola, bienvenidos a un nuevo video".
+- Mantén la retención: pattern interrupts, micro-cliffhangers, ejemplos concretos, ritmo variado, frases cortas para hablar.
+- Cierre con conclusión satisfactoria + llamada a la acción específica (comentario/suscripción/siguiente video).
+- Escribe el cuerpo como lo diría el creador frente a cámara (no escenografía entre paréntesis salvo lo imprescindible).
+
+FORMATO DE SALIDA
+Responde SOLO con un objeto JSON válido, sin texto adicional, con esta forma:
+{
+  "title": "título del nuevo video",
+  "blocks": [
+    { "kind": "angle",   "label": "NUEVO ÁNGULO: <resumen>", "body": "1-2 frases que explican el enfoque diferenciador" },
+    { "kind": "section", "label": "EL GANCHO", "timestamp": "00:00 - 00:15", "body": "<texto hablable del gancho>" },
+    { "kind": "value",   "label": "NUEVA INFORMACIÓN DE VALOR", "items": ["aporte 1", "aporte 2", "aporte 3"] },
+    { "kind": "section", "label": "DESARROLLO 1", "timestamp": "00:15 - ...", "body": "<texto>" },
+    { "kind": "section", "label": "DESARROLLO 2", "timestamp": "... - ...", "body": "<texto>" },
+    { "kind": "section", "label": "CIERRE Y CTA", "timestamp": "... - fin", "body": "<texto>" }
+  ]
+}
+Usa tantas secciones "section" como haga falta para cubrir la longitud objetivo (mínimo 4). Cada "body" debe ser sustancial, no una sola línea.`;
+
 export async function generateScript(
   transcript: string,
   optimizedTitle: string
 ): Promise<GeneratedScript> {
-  const targetChars = transcript.replace(/\[[^\]]*\]/g, "").trim().length;
+  const ref = transcript.replace(/\[[^\]]*\]/g, "").trim();
+  const targetChars = ref.length;
+
+  // Con transcripción → modo "replicar estilo del original".
+  // Sin transcripción (idea de canal) → modo "guion original de alta calidad".
+  const userContent = ref
+    ? `Transcripción del video de referencia (estúdiala):
+"""
+${transcript.slice(0, 14000)}
+"""
+
+Título objetivo del nuevo video para nuestro canal: "${optimizedTitle}"
+Longitud objetivo del guion: ~${targetChars} caracteres (la del original).
+
+Escribe el guion siguiendo todas las reglas del sistema y devuelve únicamente el JSON.`
+    : `No hay video de referencia. Escribe un guion ORIGINAL de altísima calidad para este título de nuestro canal: "${optimizedTitle}".
+
+Aplica todas las buenas prácticas de retención y CTR del sistema (gancho potente, loops abiertos, valor real, cierre con CTA). Longitud objetivo: entre 3500 y 6000 caracteres. Devuelve únicamente el JSON.`;
 
   const res = await client().chat.completions.create({
     model: TEXT_MODEL,
-    temperature: 0.8,
+    temperature: 0.85,
     response_format: { type: "json_object" },
     messages: [
-      {
-        role: "system",
-        content:
-          "Eres un guionista de YouTube. Analizas la transcripción de un video y replicas su estilo de escritura EXACTO y su longitud aproximada en caracteres, pero adaptas el contenido a nuestro canal: mismo nicho, nueva información de valor, otro ángulo. Respondes SOLO en JSON.",
-      },
-      {
-        role: "user",
-        content: `Transcripción de referencia (analiza su estilo, tono y estructura):
-"""
-${transcript.slice(0, 12000)}
-"""
-
-Título objetivo del nuevo video: "${optimizedTitle}"
-
-Requisitos:
-- Replica el ESTILO de escritura y el tono exactos de la transcripción.
-- La longitud total del guion debe acercarse a ${targetChars} caracteres (longitud del original).
-- Aporta NUEVA información de valor y un ÁNGULO distinto, adaptado a nuestro canal.
-- No copies frases del original; reescríbelo.
-
-Devuelve este JSON exacto:
-{
-  "title": "${optimizedTitle}",
-  "blocks": [
-    { "kind": "angle", "label": "NUEVO ÁNGULO: ...", "body": "frase potente del nuevo enfoque" },
-    { "kind": "section", "label": "EL GANCHO", "timestamp": "00:00 - 00:15", "body": "texto del guion" },
-    { "kind": "value", "label": "NUEVA INFORMACIÓN DE VALOR", "items": ["punto 1", "punto 2", "punto 3"] },
-    { "kind": "section", "label": "DESARROLLO", "timestamp": "00:15 - ...", "body": "texto del guion" },
-    { "kind": "section", "label": "CIERRE / CTA", "timestamp": "... ", "body": "texto del guion" }
-  ]
-}`,
-      },
+      { role: "system", content: SCRIPT_SYSTEM_PROMPT },
+      { role: "user", content: userContent },
     ],
   });
 
@@ -159,6 +182,50 @@ Devuelve este JSON exacto:
     (b: ScriptBlock) => b && b.kind && b.label
   );
   return parsed;
+}
+
+// ── 2b. Análisis de la miniatura original (visión) ──────────────────────────
+export async function analyzeThumbnail(
+  imageUrl: string
+): Promise<{ title: string; description: string }[]> {
+  try {
+    const res = await client().chat.completions.create({
+      model: TEXT_MODEL,
+      temperature: 0.6,
+      response_format: { type: "json_object" },
+      messages: [
+        {
+          role: "system",
+          content:
+            "Eres un experto en diseño de miniaturas de YouTube. Analizas una miniatura y explicas qué la hace funcionar (composición, contraste, foco, texto, emoción). Respondes SOLO en JSON.",
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Analiza esta miniatura. Devuelve JSON:
+{ "insights": [ { "title": "factor (2-4 palabras)", "description": "explicación breve" } ] }
+Incluye 2-3 insights accionables.`,
+            },
+            { type: "image_url", image_url: { url: imageUrl } },
+          ],
+        },
+      ],
+    });
+    const parsed = extractJson<{
+      insights: { title: string; description: string }[];
+    }>(res.choices[0]?.message?.content || "{}");
+    return (parsed.insights || []).slice(0, 3);
+  } catch {
+    // Si el análisis visual falla (p. ej. miniatura no accesible), no rompemos.
+    return [
+      {
+        title: "Alto Contraste",
+        description: "Sujeto destacado sobre el fondo para captar la atención.",
+      },
+    ];
+  }
 }
 
 // ── 3. Generación de miniatura ──────────────────────────────────────────────

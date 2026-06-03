@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { mockChannelAnalysis } from "@/lib/mock";
 import { analyzeChannelScreenshot, isOpenAIConfigured } from "@/lib/openai";
 import type { ChannelAnalysis, ChannelVideoIdea } from "@/lib/types";
 
@@ -15,32 +14,40 @@ function hash(str: string): number {
   return Math.abs(h);
 }
 
-// POST /api/channel  { channelName: string, screenshot?: string (dataURL) }
+// POST /api/channel  { channelName: string, screenshot: string (dataURL) }
 // Analiza un canal (visión GPT sobre la captura) y genera 9 ideas de video.
+// Las miniaturas adaptadas se generan bajo demanda en /api/thumbnail.
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
-  const channelName: string = body.channelName || "Canal de YouTube";
+  const channelName: string = body.channelName || "";
   const screenshot: string | undefined = body.screenshot;
 
-  // Sin OpenAI o sin captura → modo demo.
-  if (!isOpenAIConfigured() || !screenshot) {
-    return NextResponse.json(mockChannelAnalysis(channelName));
+  if (!isOpenAIConfigured()) {
+    return NextResponse.json(
+      { error: "Configura OPENAI_API_KEY para analizar canales." },
+      { status: 400 }
+    );
+  }
+  if (!screenshot) {
+    return NextResponse.json(
+      { error: "Sube una captura del canal para analizarlo." },
+      { status: 400 }
+    );
   }
 
   try {
     const result = await analyzeChannelScreenshot(screenshot, channelName);
-    const seed = hash(result.channelName || channelName);
+    const seed = hash(result.channelName || channelName || String(Date.now()));
     const videos: ChannelVideoIdea[] = result.videos.map((v, i) => ({
       id: `${seed}-${i}`,
       title: v.title,
-      // Las miniaturas se generan bajo demanda en /api/thumbnail.
-      thumbnailUrl: `https://picsum.photos/seed/${seed + i}/640/360`,
+      thumbnailUrl: "", // se genera bajo demanda con gpt-image-2
       virality: v.virality,
     }));
 
     const analysis: ChannelAnalysis = {
       id: `${seed}-${Date.now()}`,
-      channelName: result.channelName || channelName,
+      channelName: result.channelName || channelName || "Canal de YouTube",
       createdAt: Date.now(),
       adaptedTitle: result.adaptedTitle,
       thumbnailStyle: result.thumbnailStyle,

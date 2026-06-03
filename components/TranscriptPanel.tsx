@@ -5,22 +5,17 @@ import Icon from "./Icon";
 
 interface TranscriptResult {
   transcript: string;
-  source: "gemini" | "demo";
+  source: "gemini";
 }
 
 export default function TranscriptPanel({
   url,
   initialTranscript,
-  initialSource,
 }: {
   url: string;
   initialTranscript?: string;
-  initialSource?: "gemini" | "demo";
 }) {
   const [transcript, setTranscript] = useState<string>(initialTranscript || "");
-  const [source, setSource] = useState<"gemini" | "demo" | null>(
-    initialSource || null
-  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -38,7 +33,6 @@ export default function TranscriptPanel({
       if (!res.ok) throw new Error(data.error || "No se pudo transcribir.");
       const d = data as TranscriptResult;
       setTranscript(d.transcript);
-      setSource(d.source);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado.");
     } finally {
@@ -64,7 +58,7 @@ export default function TranscriptPanel({
             Transcripción del Video
           </h2>
           <p className="text-body-lg text-on-surface-variant mt-3">
-            El contenido hablado del link, con marcas de tiempo.
+            El contenido hablado del link, con marcas de tiempo · Gemini 3 Flash.
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -112,23 +106,10 @@ export default function TranscriptPanel({
 
       {transcript && (
         <div className="glass-premium rounded-xl p-8 md:p-10 shadow-2xl">
-          {source && (
-            <div
-              className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-label-sm font-semibold mb-6 ${
-                source === "gemini"
-                  ? "bg-primary/5 border border-primary/10 text-primary"
-                  : "bg-tertiary/5 border border-tertiary/20 text-tertiary"
-              }`}
-            >
-              <Icon
-                name={source === "gemini" ? "verified" : "science"}
-                size={18}
-              />
-              {source === "gemini"
-                ? "Transcripción real · Gemini 3 Flash"
-                : "Transcripción demo · configura REPLICATE_API_TOKEN"}
-            </div>
-          )}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-label-sm font-semibold mb-6 bg-primary/5 border border-primary/10 text-primary">
+            <Icon name="verified" size={18} />
+            Transcripción real · Gemini 3 Flash
+          </div>
           <pre className="text-body-md text-on-surface-variant whitespace-pre-wrap leading-relaxed font-sans max-h-[520px] overflow-y-auto">
             {transcript}
           </pre>

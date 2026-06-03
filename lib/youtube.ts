@@ -19,10 +19,8 @@ export function extractVideoId(url: string): string | null {
   return null;
 }
 
-/** Miniatura pública de un video (no requiere API key). */
+/** Miniatura pública en alta resolución de un video (no requiere API key). */
 export function thumbnailFor(videoId: string | null): string {
-  if (!videoId) {
-    return "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg";
-  }
-  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  if (!videoId) return "";
+  return `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
 }

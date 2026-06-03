@@ -172,8 +172,9 @@ export default function CreateChannelPage() {
       {analysis && (
         <ChannelGrid
           title={analysis.channelName}
-          subtitle="9 ideas de video adaptadas a tu canal · pasa el cursor para generar el guion."
+          subtitle="9 ideas de video adaptadas a tu canal · pasa el cursor para generar miniatura o guion."
           videos={analysis.videos}
+          thumbnailStyle={analysis.thumbnailStyle}
         />
       )}
     </>

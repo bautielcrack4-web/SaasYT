@@ -44,6 +44,15 @@ export default function ThumbnailCard({
     }
   };
 
+  const download = () => {
+    const a = document.createElement("a");
+    a.href = image;
+    a.download = "miniatura-creatorlens.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
   return (
     <div className="md:col-span-5 glass-premium p-8 md:p-10 flex flex-col rounded-xl hover-lift smooth-transition shadow-2xl">
       <h2 className="font-display text-headline-lg mb-8 text-tighter">
@@ -71,18 +80,29 @@ export default function ThumbnailCard({
         )}
       </div>
 
-      <button
-        onClick={generate}
-        disabled={genLoading}
-        className="w-full bg-primary text-on-primary py-4 rounded-xl font-bold flex justify-center items-center gap-3 hover:brightness-110 smooth-transition active:scale-95 shadow-lg shadow-primary/20 disabled:opacity-60 mb-6"
-      >
-        <Icon name={genLoading ? "progress_activity" : "auto_fix_high"} className={genLoading ? "animate-spin" : ""} />
-        {genLoading
-          ? "Generando miniatura…"
-          : generated
-            ? "Regenerar miniatura"
-            : "Generar miniatura optimizada"}
-      </button>
+      <div className="flex gap-3 mb-6">
+        <button
+          onClick={generate}
+          disabled={genLoading}
+          className="flex-1 bg-primary text-on-primary py-4 rounded-xl font-bold flex justify-center items-center gap-3 hover:brightness-110 smooth-transition active:scale-95 shadow-lg shadow-primary/20 disabled:opacity-60"
+        >
+          <Icon name={genLoading ? "progress_activity" : "auto_fix_high"} className={genLoading ? "animate-spin" : ""} />
+          {genLoading
+            ? "Generando…"
+            : generated
+              ? "Regenerar"
+              : "Generar miniatura optimizada"}
+        </button>
+        {generated && !genLoading && (
+          <button
+            onClick={download}
+            title="Descargar miniatura"
+            className="shrink-0 w-14 bg-secondary text-on-secondary rounded-xl font-bold flex justify-center items-center hover:brightness-110 smooth-transition active:scale-95 shadow-lg shadow-secondary/20"
+          >
+            <Icon name="download" />
+          </button>
+        )}
+      </div>
 
       {error && <p className="text-error text-body-md font-medium mb-4">{error}</p>}
 

@@ -59,12 +59,16 @@ export default function HistoryPage() {
               onClick={() => setOpenId(c.id)}
             >
               <div className="relative aspect-video overflow-hidden">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={c.videos[0]?.thumbnailUrl}
-                  alt={c.channelName}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
+                {c.videos[0]?.thumbnailUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={c.videos[0].thumbnailUrl}
+                    alt={c.channelName}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary/20 via-secondary/15 to-surface-container" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-5">
                   <span className="text-white font-bold text-title-md text-tighter">
                     {c.channelName}
@@ -102,8 +106,9 @@ export default function HistoryPage() {
           </button>
           <ChannelGrid
             title={open.channelName}
-            subtitle={`Guardado el ${new Date(open.createdAt).toLocaleString("es")} · pasa el cursor para generar el guion.`}
+            subtitle={`Guardado el ${new Date(open.createdAt).toLocaleString("es")} · pasa el cursor para generar miniatura o guion.`}
             videos={open.videos}
+            thumbnailStyle={open.thumbnailStyle}
           />
         </>
       )}

@@ -49,21 +49,10 @@ export default function ScriptSection({ script }: { script: GeneratedScript }) {
           <p className="text-body-lg text-on-surface-variant mt-3">
             Estructura narrativa premium con nuevos ángulos de valor.
           </p>
-          {script.transcriptError && (
-            <div className="mt-4 inline-flex items-center gap-2 bg-error/5 border border-error/20 text-error px-4 py-1.5 rounded-full text-label-sm font-semibold max-w-xl">
-              <Icon name="error" size={18} />
-              Transcripción no disponible: {script.transcriptError}
-            </div>
-          )}
-          {script.transcriptSource && script.transcriptSource !== "none" && (
+          {script.transcriptSource === "gemini" && (
             <div className="mt-4 inline-flex items-center gap-2 bg-primary/5 border border-primary/10 text-primary px-4 py-1.5 rounded-full text-label-sm font-semibold">
-              <Icon
-                name={script.transcriptSource === "gemini" ? "verified" : "science"}
-                size={18}
-              />
-              {script.transcriptSource === "gemini"
-                ? "Basado en la transcripción real (Gemini 3 Flash)"
-                : "Transcripción demo (configura REPLICATE_API_TOKEN)"}
+              <Icon name="verified" size={18} />
+              Basado en la transcripción real (Gemini 3 Flash)
             </div>
           )}
         </div>
