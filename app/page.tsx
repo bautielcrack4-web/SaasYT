@@ -5,6 +5,7 @@ import Icon from "@/components/Icon";
 import TitleCard from "@/components/TitleCard";
 import ThumbnailCard from "@/components/ThumbnailCard";
 import ScriptSection from "@/components/ScriptSection";
+import TranscriptPanel from "@/components/TranscriptPanel";
 import type { GeneratedScript, VideoAnalysis } from "@/lib/types";
 
 export default function DashboardPage() {
@@ -129,6 +130,9 @@ export default function DashboardPage() {
           />
         </div>
       )}
+
+      {/* Transcripción del video original a partir del link */}
+      {analysis && !analyzing && <TranscriptPanel url={analysis.sourceUrl} />}
 
       {script && <ScriptSection script={script} />}
     </>
