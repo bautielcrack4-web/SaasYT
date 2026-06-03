@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Icon from "./Icon";
 
-type Source = "captions" | "gemini";
+type Source = "apify" | "captions";
 
 interface TranscriptResult {
   transcript: string;
@@ -11,8 +11,8 @@ interface TranscriptResult {
 }
 
 const SOURCE_LABEL: Record<Source, string> = {
+  apify: "Transcripción real · Apify",
   captions: "Transcripción real · subtítulos de YouTube",
-  gemini: "Transcripción real · Gemini 3 Flash",
 };
 
 export default function TranscriptPanel({

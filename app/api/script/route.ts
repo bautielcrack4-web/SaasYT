@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     // Si no hay ni transcripción ni enlace (idea de canal), se genera un
     // guion original a partir del título.
     let transcriptSource: TranscriptSource | undefined = transcript
-      ? providedSource || "captions"
+      ? providedSource || "apify"
       : undefined;
     if (!transcript && sourceUrl) {
       const t = await getTranscript(sourceUrl);

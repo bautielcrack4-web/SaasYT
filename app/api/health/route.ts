@@ -11,6 +11,7 @@ export async function GET() {
     ok: true,
     env: {
       OPENAI_API_KEY: !!process.env.OPENAI_API_KEY,
+      APIFY_TOKEN: !!process.env.APIFY_TOKEN,
       REPLICATE_API_TOKEN: !!process.env.REPLICATE_API_TOKEN,
       OPENAI_TEXT_MODEL: process.env.OPENAI_TEXT_MODEL || "gpt-4o (por defecto)",
       OPENAI_IMAGE_MODEL:
