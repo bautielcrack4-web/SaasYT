@@ -8,9 +8,19 @@ interface TranscriptResult {
   source: "gemini" | "demo";
 }
 
-export default function TranscriptPanel({ url }: { url: string }) {
-  const [transcript, setTranscript] = useState<string>("");
-  const [source, setSource] = useState<"gemini" | "demo" | null>(null);
+export default function TranscriptPanel({
+  url,
+  initialTranscript,
+  initialSource,
+}: {
+  url: string;
+  initialTranscript?: string;
+  initialSource?: "gemini" | "demo";
+}) {
+  const [transcript, setTranscript] = useState<string>(initialTranscript || "");
+  const [source, setSource] = useState<"gemini" | "demo" | null>(
+    initialSource || null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);

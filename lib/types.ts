@@ -17,6 +17,9 @@ export interface VideoAnalysis {
   sourceUrl: string;
   title: TitleAnalysis;
   thumbnail: ThumbnailAnalysis;
+  /** Transcripción del video (base para título y guion). */
+  transcript?: string;
+  transcriptSource?: "gemini" | "demo" | "none";
 }
 
 export interface ScriptBlock {

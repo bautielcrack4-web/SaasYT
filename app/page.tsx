@@ -51,6 +51,7 @@ export default function DashboardPage() {
         body: JSON.stringify({
           title: analysis.title.optimized,
           sourceUrl: analysis.sourceUrl,
+          transcript: analysis.transcript,
         }),
       });
       const data: GeneratedScript = await res.json();
@@ -132,7 +133,17 @@ export default function DashboardPage() {
       )}
 
       {/* Transcripción del video original a partir del link */}
-      {analysis && !analyzing && <TranscriptPanel url={analysis.sourceUrl} />}
+      {analysis && !analyzing && (
+        <TranscriptPanel
+          url={analysis.sourceUrl}
+          initialTranscript={analysis.transcript}
+          initialSource={
+            analysis.transcriptSource === "none"
+              ? undefined
+              : analysis.transcriptSource
+          }
+        />
+      )}
 
       {script && <ScriptSection script={script} />}
     </>
