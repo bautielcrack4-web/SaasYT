@@ -54,17 +54,32 @@ export async function transcribeYouTube(
   };
 
   // La respuesta del modelo llega en streaming; concatenamos los fragmentos.
+  // Si falla (input no soportado, video privado, etc.) propagamos el error
+  // con un mensaje claro en vez de ocultarlo cayendo al modo demo.
   let out = "";
-  for await (const event of replicate.stream("google/gemini-3-flash", {
-    input,
-  })) {
-    out += String(event);
+  try {
+    for await (const event of replicate.stream("google/gemini-3-flash", {
+      input,
+    })) {
+      out += String(event);
+    }
+  } catch (err) {
+    // Fallback: algunos errores transitorios de streaming se resuelven con la
+    // llamada bloqueante. Si también falla, lanzamos el error original.
+    try {
+      const result = await replicate.run("google/gemini-3-flash", { input });
+      out = Array.isArray(result) ? result.join("") : String(result);
+    } catch {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new Error(`Replicate (gemini-3-flash) falló: ${msg}`);
+    }
   }
 
   const transcript = out.trim();
   if (!transcript) {
-    // Si por algún motivo no hubo salida, no rompemos el flujo.
-    return { transcript: demoTranscript(videoUrl), source: "demo" };
+    throw new Error(
+      "Gemini no devolvió transcripción. Verifica que el enlace sea público y que Replicate acepte URLs de YouTube directamente."
+    );
   }
 
   return { transcript, source: "gemini" };

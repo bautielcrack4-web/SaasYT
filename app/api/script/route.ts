@@ -16,13 +16,16 @@ export async function POST(req: Request) {
   // 1. Base de conocimiento: transcripción del video original.
   let transcript = "";
   let transcriptSource: "gemini" | "demo" | "none" = "none";
+  let transcriptError: string | undefined;
   if (sourceUrl && typeof sourceUrl === "string") {
     try {
       const t = await transcribeYouTube(sourceUrl);
       transcript = t.transcript;
       transcriptSource = t.source;
-    } catch {
+    } catch (e) {
+      // No bloqueamos el guion: lo generamos igual y reportamos el error.
       transcriptSource = "none";
+      transcriptError = e instanceof Error ? e.message : "Error de transcripción.";
     }
   }
 
@@ -34,5 +37,10 @@ export async function POST(req: Request) {
   // ───────────────────────────────────────────────────────────────────────
   const script = mockScript(title || "Tu próximo video viral");
 
-  return NextResponse.json({ ...script, transcriptSource, transcript });
+  return NextResponse.json({
+    ...script,
+    transcriptSource,
+    transcript,
+    transcriptError,
+  });
 }

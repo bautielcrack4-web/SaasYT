@@ -34,6 +34,8 @@ export interface GeneratedScript {
   transcriptSource?: "gemini" | "demo" | "none";
   /** Transcripción detallada del video original (si se obtuvo). */
   transcript?: string;
+  /** Mensaje de error si la transcripción falló (sigue generándose el guion). */
+  transcriptError?: string;
 }
 
 export interface ChannelVideoIdea {
