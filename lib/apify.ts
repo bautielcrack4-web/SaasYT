@@ -9,7 +9,11 @@
 //   pintostudio/youtube-transcript-scraper   →  https://apify.com/pintostudio/youtube-transcript-scraper
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ACTOR = process.env.APIFY_ACTOR || "pintostudio~youtube-transcript-scraper";
+// ID del actor pintostudio/youtube-transcript-scraper.
+const ACTOR = process.env.APIFY_ACTOR || "faVsWy9VTSNVIhWpR";
+// Idioma de la transcripción a solicitar (configurable). El actor requiere
+// este campo; "es" por defecto para contenido en español.
+const TARGET_LANG = process.env.APIFY_TARGET_LANG || "es";
 
 export const isApifyConfigured = (): boolean => !!process.env.APIFY_TOKEN;
 
@@ -89,12 +93,10 @@ export async function fetchApifyTranscript(
   const res = await fetch(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    // El actor pintostudio espera `videoUrl`. Enviamos también variantes
-    // comunes por compatibilidad con otros actors de transcripción.
+    // Input exacto del actor: videoUrl + targetLanguage.
     body: JSON.stringify({
       videoUrl,
-      videoUrls: [videoUrl],
-      startUrls: [{ url: videoUrl }],
+      targetLanguage: TARGET_LANG,
     }),
   });
 
