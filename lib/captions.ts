@@ -64,9 +64,18 @@ export async function fetchYouTubeCaptions(
   videoId: string
 ): Promise<string | null> {
   try {
-    const res = await fetch(`https://www.youtube.com/watch?v=${videoId}&hl=es`, {
-      headers: { "User-Agent": UA, "Accept-Language": "es,en;q=0.9" },
-    });
+    // `bpctr` + cookie CONSENT evitan el muro de consentimiento que YouTube
+    // muestra a IPs de datacenter (Vercel), donde no vendría captionTracks.
+    const res = await fetch(
+      `https://www.youtube.com/watch?v=${videoId}&hl=en&gl=US&bpctr=9999999999&has_verified=1`,
+      {
+        headers: {
+          "User-Agent": UA,
+          "Accept-Language": "en-US,en;q=0.9,es;q=0.8",
+          Cookie: "CONSENT=YES+cb.20210328-17-p0.en+FX+000; SOCS=CAI",
+        },
+      }
+    );
     if (!res.ok) return null;
     const html = await res.text();
 

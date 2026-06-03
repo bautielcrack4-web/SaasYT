@@ -30,9 +30,9 @@ export default function DashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
-      if (!res.ok) throw new Error("No se pudo analizar el video.");
-      const data: VideoAnalysis = await res.json();
-      setAnalysis(data);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "No se pudo analizar el video.");
+      setAnalysis(data as VideoAnalysis);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error inesperado.");
     } finally {
@@ -55,8 +55,9 @@ export default function DashboardPage() {
           transcriptSource: analysis.transcriptSource,
         }),
       });
-      const data: GeneratedScript = await res.json();
-      setScript(data);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "No se pudo generar el guion.");
+      setScript(data as GeneratedScript);
       setTimeout(
         () =>
           document
@@ -64,6 +65,8 @@ export default function DashboardPage() {
             ?.scrollIntoView({ behavior: "smooth" }),
         60
       );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error inesperado.");
     } finally {
       setScripting(false);
     }
